@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from textblob import TextBlob
 from flask_cors import CORS
+import os
+
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
@@ -30,5 +32,7 @@ def analyze():
         "score": sentiment_score
     })
 
+PORT = int(os.environ.get("PORT", 5000))
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=PORT)
