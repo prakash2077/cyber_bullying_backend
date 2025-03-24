@@ -1,34 +1,28 @@
 from flask import Flask, request, jsonify
-from textblob import TextBlob
 from flask_cors import CORS
+from textblob import TextBlob
 
 app = Flask(__name__)
-CORS(app)  # Allow cross-origin requests
+
+# Allow all origins or specify the frontend origin
+CORS(app, resources={r"/*": {"origins": "*"}})   # Allow all origins
+# OR to be more secure, specify the frontend origin only
+# CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5501"}})
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    data = request.json
-    user_text = data.get("text", "")
-
-    if not user_text.strip():
-        return jsonify({"error": "No text provided"}), 400
-
-    # Sentiment analysis
-    blob = TextBlob(user_text)
-    sentiment_score = blob.sentiment.polarity
-
-    # Determine sentiment
-    if sentiment_score > 0:
-        sentiment = "😊 Positive"
-    elif sentiment_score < 0:
-        sentiment = "😞 Negative"
-    else:
-        sentiment = "😐 Neutral"
-
-    return jsonify({
-        "sentiment": sentiment,
-        "score": sentiment_score
-    })
+    data = request.get_json()
+    text = data.get('text', '')
+    
+    if text:
+        analysis = TextBlob(text)
+        polarity = analysis.sentiment.polarity
+        subjectivity = analysis.sentiment.subjectivity
+        return jsonify({
+            "polarity": polarity,
+            "subjectivity": subjectivity
+        })
+    return jsonify({"error": "No text provided"}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
